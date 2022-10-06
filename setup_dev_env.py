@@ -40,7 +40,14 @@ def clone_git_repos():
         return
 
     clone_path = os.path.expanduser(input("Enter clone path: "))
-    repos = requests.get(f"https://api.github.com/users/{GITHUB_USERNAME}/repos").json()
+
+    try:
+        repos = requests.get(f"https://api.github.com/users/{GITHUB_USERNAME}/repos").json()
+    except Exception as e:
+        print(f"{colorama.Fore.RED}There was an error while making a GET request to Github API: ")
+        print(e, colorama.Style.RESET_ALL)
+        return
+
     for i in repos:
         execute_command(f"cd {clone_path}; git clone https://github.com/{GITHUB_USERNAME}/{i.get('name')}")
 
@@ -84,9 +91,10 @@ def execute_command(cmd: str) -> int:
     return ret_code
 
 
+colorama.init()
 if __name__ == "__main__":
-    colorama.init()
     print(f"{colorama.Fore.YELLOW}Setting up Development Environment...{colorama.Style.RESET_ALL}")
+
     update_system()
     install_prerequisites()
 
@@ -95,4 +103,5 @@ if __name__ == "__main__":
     install_vscode()
 
     clone_git_repos()
+
     print(f"{colorama.Fore.GREEN}Setup finished!{colorama.Style.RESET_ALL}")
