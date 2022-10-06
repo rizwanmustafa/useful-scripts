@@ -1,5 +1,8 @@
 import os
 import colorama
+import requests
+
+GITHUB_USERNAME = "rizwanmustafa"
 
 """
 
@@ -22,42 +25,45 @@ Things this script will do:
 
 def update_system():
     print(make_stylish_heading("Updating System", colorama.Style.BRIGHT))
+    execute_command("sudo pacman -Syyu --noconfirm")
 
-    ret_code = os.system("sudo pacman -Syyu --noconfirm")
-    if ret_code == 0:
-        print(f"{colorama.Fore.GREEN}Command executed sucessfully!{colorama.Style.RESET_ALL}")
-    else:
-        print(f"Command failed with code: {ret_code}")
-    print()
+
+def install_prerequisites():
+    print(make_stylish_heading("Installing prerequisites", colorama.Style.BRIGHT))
+    execute_command("sudo pacman -S git")
+
+
+def clone_git_repos():
+    print(make_stylish_heading("Cloning Git Repos", colorama.Style.BRIGHT))
+    if input("Do you want to clone all repos [y/N]? ").lower() != "y":
+        print()
+        return
+
+    clone_path = os.path.expanduser(input("Enter clone path: "))
+    repos = requests.get(f"https://api.github.com/users/{GITHUB_USERNAME}/repos").json()
+    for i in repos:
+        execute_command(f"cd {clone_path}; git clone https://github.com/{GITHUB_USERNAME}/{i.get('name')}")
+
+
+def install_vscode():
+    print(make_stylish_heading("Installing Visual Studio Code", colorama.Style.BRIGHT))
+    execute_command("cd /tmp; git clone https://aur.archlinux.org/visual-studio-code-bin.git vs_code; cd vs_code; makepkg -si")
 
 
 def install_python():
     print(make_stylish_heading("Installing Python", colorama.Style.BRIGHT))
-
-    ret_code = os.system("sudo pacman -S python3 --noconfirm")
-    if ret_code == 0:
-        print(f"{colorama.Fore.GREEN}Command executed sucessfully!{colorama.Style.RESET_ALL}")
-    else:
-        print(f"Command failed with code: {ret_code}")
+    execute_command("sudo pacman -S python3 --noconfirm")
 
 
 def install_node_pack():
     print(make_stylish_heading("Installing NVM and Node LTS", colorama.Style.BRIGHT))
 
-    ret_code = os.system("curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash")
-    if ret_code == 0:
-        print(f"{colorama.Fore.GREEN}Command executed sucessfully!{colorama.Style.RESET_ALL}")
-    else:
-        print(f"Command failed with code: {ret_code}")
-    print()
+    execute_command("curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash")
+    execute_command("echo 'export NVM_DIR=\"$HOME/.nvm\"; [ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"; nvm install --lts' | bash")
 
-    ret_code = os.system("echo 'export NVM_DIR=\"$HOME/.nvm\"; [ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"; nvm install --lts' | bash")
-    if ret_code == 0:
-        print(f"{colorama.Fore.GREEN}Command executed sucessfully!{colorama.Style.RESET_ALL}")
-    else:
-        print(f"Command failed with code: {ret_code}")
 
-def make_stylish_heading(heading: str, color_code: str = "") -> str:
+def make_stylish_heading(heading: str, color_code: str = "", padding: int = 75) -> str:
+    heading = heading.center(padding)
     style = "#" * (len(heading) + 4)
 
     heading = "# " + color_code + heading + colorama.Style.RESET_ALL + " #"
@@ -65,8 +71,28 @@ def make_stylish_heading(heading: str, color_code: str = "") -> str:
     return f"{style}\n{heading}\n{style}"
 
 
+def execute_command(cmd: str) -> int:
+    ret_code = os.system(cmd)
+
+    print()
+    if ret_code == 0:
+        print(f"{colorama.Fore.GREEN}Command executed sucessfully!{colorama.Style.RESET_ALL}")
+    else:
+        print(f"Command failed with code: {ret_code}")
+    print()
+
+    return ret_code
+
+
 if __name__ == "__main__":
     colorama.init()
-    # update_system()
-    # install_python()
+    print(f"{colorama.Fore.YELLOW}Setting up Development Environment...{colorama.Style.RESET_ALL}")
+    update_system()
+    install_prerequisites()
+
+    install_python()
     install_node_pack()
+    install_vscode()
+
+    clone_git_repos()
+    print(f"{colorama.Fore.GREEN}Setup finished!{colorama.Style.RESET_ALL}")
