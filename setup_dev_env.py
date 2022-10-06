@@ -42,7 +42,9 @@ def clone_git_repos():
     clone_path = os.path.expanduser(input("Enter clone path: "))
 
     try:
-        repos = requests.get(f"https://api.github.com/users/{GITHUB_USERNAME}/repos").json()
+        repos_request = requests.get(f"https://api.github.com/users/{GITHUB_USERNAME}/repos")
+        repos_request.raise_for_status()
+        repos = repos_request.json()
     except Exception as e:
         print(f"{colorama.Fore.RED}There was an error while making a GET request to Github API: ")
         print(e, colorama.Style.RESET_ALL)
