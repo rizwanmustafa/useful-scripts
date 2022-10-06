@@ -38,9 +38,17 @@ def install_python():
     print()
 
 def install_nvm():
-    print(make_stylish_heading("Installing NVM and NodeJS LTS"), colorama.Style.BRIGHT)
+    print(make_stylish_heading("Installing Node Version Manager"), colorama.Style.BRIGHT)
 
     ret_code = os.system("curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash")
+
+    print(f"Command exited with code: {ret_code}")
+    print()
+
+def install_node():
+    print(make_stylish_heading("Installing latest NodeJS LTS"), colorama.Style.BRIGHT)
+
+    ret_code = os.system("echo 'export NVM_DIR=\"$HOME/.nvm\"; [ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"; nvm install --lts' | bash")
 
     print(f"Command exited with code: {ret_code}")
     print()
@@ -56,6 +64,7 @@ def make_stylish_heading(heading : str, color_code : str = "") -> str:
 
 if __name__ == "__main__":
     colorama.init()
-    update_system()
-    install_python()
+    # update_system()
+    # install_python()
     install_nvm()
+    install_node()
